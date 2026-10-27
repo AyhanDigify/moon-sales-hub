@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0E6E7A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Moon Sales Hub Prototip</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: üst çubukta görünüm seçici; Temsilci = ortalanmış telefon çerçevesi, Yönetim = sekmeli masaüstü paneli */
+:root{
+  --bg:#EEF3F4; --surface:#FFFFFF; --sunk:#F1F5F6; --sunk2:#E3EBED; --fg:#13232A; --muted:#5B6C73; --line:#D5DEE1;
+  --teal:#0E6E7A; --teal-ink:#FFFFFF; --teal-soft:#D8EDEF; --sand:#B8862E; --sand-soft:#F6ECDA;
+  --ok:#2E7D4F; --ok-soft:#DCEFE3; --warn:#B26A00; --warn-soft:#F7E8D2; --bad:#B3392F; --bad-soft:#F6DEDB;
+  --meta:#2F4FB0; --meta-soft:#E3E9FB;
+  --d:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif; --b:"Figtree",ui-sans-serif,system-ui,-apple-system,sans-serif; --m:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1518; --surface:#152126; --sunk:#1B2A30; --sunk2:#24363D; --fg:#E3ECEE; --muted:#93A7AE; --line:#2A3D44;
+  --teal:#4FB6C2; --teal-ink:#0D1518; --teal-soft:#173C42; --sand:#D9AE5E; --sand-soft:#3A2F1B;
+  --ok:#5FBF86; --ok-soft:#1C3A28; --warn:#E3A043; --warn-soft:#3D2E15; --bad:#E5776C; --bad-soft:#40211E;
+  --meta:#8EA6F2; --meta-soft:#222D4D; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1518; --surface:#152126; --sunk:#1B2A30; --sunk2:#24363D; --fg:#E3ECEE; --muted:#93A7AE; --line:#2A3D44;
+  --teal:#4FB6C2; --teal-ink:#0D1518; --teal-soft:#173C42; --sand:#D9AE5E; --sand-soft:#3A2F1B;
+  --ok:#5FBF86; --ok-soft:#1C3A28; --warn:#E3A043; --warn-soft:#3D2E15; --bad:#E5776C; --bad-soft:#40211E;
+  --meta:#8EA6F2; --meta-soft:#222D4D; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--b);font-size:14px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+select,input,textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+h1,h2,h3{font-family:var(--d);margin:0;line-height:1.15;text-wrap:balance}
+p{margin:0}
+.wrap{max-width:1180px;margin:0 auto}
+
+/* üst çubuk */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding-block:14px;border-bottom:1px solid var(--line);margin-bottom:22px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand h1{font-size:20px;font-weight:800}
+.brand span{font-family:var(--m);font-size:10.5px;color:var(--sand);letter-spacing:.08em;text-transform:uppercase}
+.seg{display:inline-flex;background:var(--sunk2);border-radius:10px;padding:3px}
+.seg button{padding:7px 14px;border-radius:8px;font-weight:600;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgb(0 0 0 / .08)}
+
+/* chip ve etiketler */
+.tag{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.t-meta{background:var(--meta-soft);color:var(--meta)}
+.t-web{background:var(--teal-soft);color:var(--teal)}
+.t-we{background:var(--sunk2);color:var(--fg)}
+.st{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.s-yeni{background:var(--meta-soft);color:var(--meta)}
+.s-iletisim{background:var(--sunk2);color:var(--fg)}
+.s-dokuman{background:var(--teal-soft);color:var(--teal)}
+.s-teklif{background:var(--sand-soft);color:var(--sand)}
+.s-kazanildi{background:var(--ok-soft);color:var(--ok)}
+.s-kaybedildi{background:var(--bad-soft);color:var(--bad)}
+.late{background:var(--bad-soft);color:var(--bad)}
+.btn{background:var(--teal);color:var(--teal-ink);font-weight:700;border-radius:9px;padding:8px 14px;font-size:13px}
+.btn.ghost{background:var(--sunk2);color:var(--fg)}
+.btn.sm{padding:5px 10px;font-size:12px;border-radius:7px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.muted{color:var(--muted)}
+.mono{font-family:var(--m)}
+
+/* TEMSİLCİ */
+.rep-layout{display:grid;grid-template-columns:minmax(0,1fr) 400px minmax(0,1fr);gap:28px;align-items:start}
+.side{display:flex;flex-direction:column;gap:12px;padding-top:6px}
+.side h3{font-size:15px}
+.side p{font-size:13px;color:var(--muted)}
+.side label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:5px}
+@media (max-width:1000px){.rep-layout{grid-template-columns:1fr}.side.right{order:3}.phone{margin:0 auto}}
+.phone{width:100%;max-width:400px;height:760px;background:var(--surface);border:1.5px solid var(--fg);border-radius:34px;padding:12px 0 0;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.notch{width:90px;height:6px;border-radius:4px;background:var(--fg);margin:0 auto 8px;flex:none;opacity:.85}
+.screen{flex:1;overflow-y:auto;padding:4px 16px 16px;display:flex;flex-direction:column;gap:10px}
+.scr-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.scr-head h2{font-size:22px;font-weight:800}
+.back{font-weight:600;color:var(--teal);font-size:13px;padding:4px 0}
+.nav{flex:none;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);background:var(--surface)}
+.nav button{padding:10px 4px 12px;font-size:11.5px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+.nav button[aria-current="true"]{color:var(--teal)}
+.nav svg{width:20px;height:20px}
+.badge{position:absolute;top:5px;left:calc(50% + 6px);background:var(--bad);color:#fff;font-size:9.5px;font-weight:700;border-radius:99px;min-width:16px;height:16px;display:grid;place-items:center;padding:0 4px}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.fchip{font-size:12px;font-weight:600;padding:5px 11px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.fchip[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.lcard{text-align:left;width:100%;border:1px solid var(--line);border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:6px;background:var(--surface)}
+.lcard:hover{border-color:var(--teal)}
+.lcard .r1{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.lcard b{font-size:14.5px}
+.lcard .sub{font-size:12px;color:var(--muted)}
+.lcard .r2{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.empty{border:1px dashed var(--line);border-radius:14px;padding:22px;text-align:center;color:var(--muted);font-size:13px}
+.kv{display:grid;grid-template-columns:96px 1fr;gap:6px 10px;font-size:13px;background:var(--sunk);border-radius:12px;padding:12px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.quote{font-size:13px;background:var(--sand-soft);border-radius:12px;padding:10px 12px}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.steps div{height:6px;border-radius:3px;background:var(--sunk2)}
+.steps div.on{background:var(--teal)}
+.steps-l{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;font-size:9.5px;color:var(--muted);text-align:center}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.actions .btn{padding:10px 6px}
+.timeline{display:flex;flex-direction:column;gap:7px;font-size:12.5px}
+.timeline div{display:flex;gap:8px}
+.timeline i{width:7px;height:7px;border-radius:50%;background:var(--teal);margin-top:6px;flex:none}
+.timeline span{color:var(--muted)}
+.demo{border:1px dashed var(--sand);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:7px;background:var(--sand-soft)}
+.demo small{font-family:var(--m);font-size:10px;color:var(--sand);letter-spacing:.06em;text-transform:uppercase}
+.demo .row{display:flex;gap:6px;flex-wrap:wrap}
+.search{display:flex;align-items:center;gap:8px;background:var(--sunk);border-radius:12px;padding:4px 6px 4px 12px}
+.search input{border:0;background:none;flex:1;min-width:0;padding:8px 0}
+.mic{width:34px;height:34px;border-radius:50%;background:var(--teal);color:var(--teal-ink);display:grid;place-items:center;flex:none}
+.mic svg{width:16px;height:16px}
+.ai{background:var(--teal-soft);border-radius:12px;padding:10px 12px;font-size:13px}
+.ai small{display:block;font-family:var(--m);font-size:10px;color:var(--muted);margin-top:4px}
+.doc{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:9px 10px;text-align:left;width:100%;background:var(--surface)}
+.doc[aria-pressed="true"]{border-color:var(--teal);background:var(--teal-soft)}
+.doc .ty{width:34px;height:40px;border-radius:6px;background:var(--sunk2);display:grid;place-items:center;font-family:var(--m);font-size:9px;color:var(--muted);flex:none}
+.doc .mm{flex:1;min-width:0}
+.doc .mm b{display:block;font-size:13px}
+.doc .mm span{font-size:11.5px;color:var(--muted)}
+.doc .ck{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line);flex:none;display:grid;place-items:center;color:var(--teal-ink);font-size:13px;font-weight:700}
+.doc[aria-pressed="true"] .ck{background:var(--teal);border-color:var(--teal)}
+.doc.internal{opacity:.7}
+.sendbar{position:sticky;bottom:0;background:var(--surface);padding-top:8px;display:flex;flex-direction:column;gap:6px}
+textarea{width:100%;min-height:120px;resize:vertical;font-size:13px;line-height:1.45}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:12px;font-weight:600;padding:6px 12px;border-radius:99px;border:1px solid var(--line)}
+.chip[aria-pressed="true"]{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}
+.notif{display:flex;gap:10px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:10px;text-align:left;width:100%}
+.notif .dot{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:none}
+.notif b{display:block;font-size:13.5px;font-weight:600}
+.notif span{font-size:12px;color:var(--muted)}
+.notif.unread b::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--bad);margin-left:6px;vertical-align:middle}
+
+/* YÖNETİM */
+.admin-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+.admin-tabs button{padding:10px 14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.admin-tabs button[aria-current="true"]{color:var(--teal);border-color:var(--teal)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:16px}
+.toolbar .l{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sim{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:var(--sand-soft);border:1px dashed var(--sand);border-radius:10px;padding:6px 8px}
+.sim small{font-family:var(--m);font-size:10px;color:var(--sand);letter-spacing:.06em;text-transform:uppercase;padding:0 4px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+@media (max-width:760px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.kpi span{display:block;font-size:12px;color:var(--muted)}
+.kpi b{font-family:var(--d);font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+.kpi small{font-size:11.5px;color:var(--muted);display:block}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
+@media (max-width:860px){.g2{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h3{font-size:15px;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.card h3 span{font-family:var(--b);font-weight:400;font-size:12px;color:var(--muted)}
+.hb{display:grid;grid-template-columns:150px 1fr 34px;gap:10px;align-items:center;font-size:13px}
+.hb .tr{height:10px;background:var(--sunk);border-radius:5px;overflow:hidden}
+.hb .tr i{display:block;height:100%;background:var(--teal);border-radius:5px}
+.hb .tr i.meta{background:var(--meta)}
+.hb .v{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.pipe{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.pipe div{background:var(--sunk);border-radius:10px;padding:10px 6px;text-align:center;font-size:11.5px;color:var(--muted)}
+.pipe b{display:block;font-family:var(--d);font-size:22px;color:var(--fg);font-variant-numeric:tabular-nums}
+@media (max-width:560px){.pipe{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.alert{display:flex;gap:10px;align-items:center;justify-content:space-between;border-left:3px solid var(--bad);background:var(--bad-soft);border-radius:0 10px 10px 0;padding:9px 12px;font-size:13px;flex-wrap:wrap}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:11.5px;color:var(--muted);font-weight:600;background:var(--sunk)}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;text-align:right}
+th.num{text-align:right}
+.rules{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.rule .z{display:flex;align-items:baseline;gap:8px}
+.rule .z b{font-family:var(--d);font-size:26px;font-weight:800;color:var(--teal);line-height:1}
+.rule .z span{font-size:12.5px;color:var(--muted)}
+.rule select{width:100%}
+.note{font-size:12.5px;color:var(--muted);max-width:75ch}
+.libgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:860px){.libgrid{grid-template-columns:1fr}}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:11px 16px;border-radius:12px;font-size:13px;font-weight:600;max-width:min(520px,calc(100vw - 32px));z-index:50;box-shadow:0 8px 24px rgb(0 0 0 / .2)}
+@media (prefers-reduced-motion:no-preference){.toast{animation:up .25s ease-out}@keyframes up{from{transform:translate(-50%,10px);opacity:0}}}
+.ex{font-family:var(--m);font-size:10.5px;color:var(--muted)}
+</style>
+</head><body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><h1>Moon Sales Hub</h1><span>prototip · örnek veri</span></div>
+    <div class="seg" role="group" aria-label="Görünüm">
+      <button id="v-rep" aria-pressed="true">Temsilci paneli</button>
+      <button id="v-admin" aria-pressed="false">Yönetim paneli</button>
+    </div>
+  </header>
+  <main id="app"></main>
+</div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+const STAGES=[["yeni","Yeni"],["iletisim","İletişimde"],["dokuman","Doküman gitti"],["teklif","Teklif"],["kazanildi","Kazanıldı"],["kaybedildi","Kaybedildi"]];
+const STAGE_NAME=Object.fromEntries(STAGES);
+const STAGE_IDX={yeni:0,iletisim:1,dokuman:2,teklif:3,kazanildi:4,kaybedildi:4};
+const CAT={WE:"Wasserernte",EC:"Euro Conteiner"};
+const ZONES={0:"Dresden · Leipzig · Erfurt",1:"Berlin · Brandenburg",2:"Hamburg · Bremen · Kiel",3:"Hannover · Kassel",4:"Düsseldorf · Münster",5:"Köln · Bonn",6:"Frankfurt · Mainz · Saarland",7:"Stuttgart · Karlsruhe",8:"München · Augsburg",9:"Nürnberg · Würzburg"};
+const state={
+  view:"rep", repId:"r8", tab:"leads", leadFilter:"aktif", openLead:null, sendFor:null, selected:[], channel:"wa", libQ:"", libCat:"tumu", msg:"",
+  adminTab:"genel", tableFilter:"tumu",
+  reps:[
+    {id:"r0",name:"Jonas Richter",zone:0,phone:"+49 151 2200 3100"},
+    {id:"r1",name:"Lea Hoffmann",zone:1,phone:"+49 151 2200 3101"},
+    {id:"r2",name:"Nord Zelte GmbH",zone:2,phone:"+49 40 555 0102",partner:true},
+    {id:"r3",name:"Felix Wagner",zone:3,phone:"+49 151 2200 3103"},
+    {id:"r4",name:"Sarah Klein",zone:4,phone:"+49 151 2200 3104"},
+    {id:"r5",name:"Ahmet Kaya",zone:5,phone:"+49 151 2200 3105"},
+    {id:"r6",name:"Tim Braun",zone:6,phone:"+49 151 2200 3106"},
+    {id:"r7",name:"Laura Weber",zone:7,phone:"+49 151 2200 3107"},
+    {id:"r8",name:"Max Huber",zone:8,phone:"+49 151 2200 3108"},
+    {id:"r9",name:"Eva Lang",zone:9,phone:"+49 151 2200 3109"}
+  ],
+  rules:{0:"r0",1:"r1",2:"r2",3:"r3",4:"r4",5:"r5",6:"r6",7:"r7",8:"r8",9:"r9"},
+  docs:[
+    {id:"d1",cat:"WE",t:"Wasserernte Broschüre",ty:"PDF",meta:"DE · 12 Seiten",topic:"genel broşür katalog übersicht",share:true},
+    {id:"d2",cat:"WE",t:"Montageanleitung Wandpaneel",ty:"PDF",meta:"DE · 8 Seiten",topic:"montaj kurulum montage paneel",share:true},
+    {id:"d3",cat:"WE",t:"Montagevideo 60 Sek.",ty:"VID",meta:"DE · 1:02",topic:"montaj video kurz",share:true},
+    {id:"d4",cat:"WE",t:"Technisches Datenblatt",ty:"PDF",meta:"DE · 4 Seiten",topic:"teknik özellik ölçü hacim liter datenblatt",share:true},
+    {id:"d5",cat:"WE",t:"Förderung & Zisternen-FAQ",ty:"IMG",meta:"DE · 24 Bilder",topic:"sss faq förderung zuschuss",share:true},
+    {id:"d6",cat:"WE",t:"Händler-Preisliste 2026",ty:"PDF",meta:"DE · nur intern",topic:"fiyat preis liste",share:false},
+    {id:"d7",cat:"EC",t:"Container 20 ft Datenblatt",ty:"PDF",meta:"DE · 6 Seiten",topic:"teknik özellik ölçü 20ft datenblatt",share:true},
+    {id:"d8",cat:"EC",t:"Isolierungsoptionen",ty:"PDF",meta:"DE · 6 Seiten",topic:"izolasyon isolierung dämmung panel u-wert",share:true},
+    {id:"d9",cat:"EC",t:"Fundament & Untergrund",ty:"PDF",meta:"DE · 3 Seiten",topic:"zemin temel fundament untergrund",share:true},
+    {id:"d10",cat:"EC",t:"Aufbauvideo Bürocontainer",ty:"VID",meta:"DE · 4:30",topic:"montaj video aufbau büro",share:true},
+    {id:"d11",cat:"EC",t:"Statik Schnee- & Windlast",ty:"PDF",meta:"DE · 9 Seiten",topic:"statik kar rüzgar yük sertifika",share:true},
+    {id:"d12",cat:"EC",t:"Referenzprojekte 2025",ty:"PDF",meta:"DE · 14 Seiten",topic:"referans projekte",share:true}
+  ],
+  leads:[], notifs:[], seq:100
+};
+function L(o){state.leads.push(Object.assign({id:"L"+(state.seq++),log:[]},o))}
+// örnek leadler (mins = kaç dakika önce geldi)
+L({name:"Thomas Becker",firm:"Becker Bau GmbH",plz:"80331",city:"München",cat:"WE",src:"meta",phone:"+49 170 4411 221",mail:"t.becker@beckerbau.de",msg:"Interesse an 10.000 L Zisterne für Bürogebäude.",stage:"yeni",mins:12});
+L({name:"Petra Schmid",firm:"",plz:"85049",city:"Ingolstadt",cat:"WE",src:"web",phone:"+49 160 9932 114",mail:"petra.schmid@web.de",msg:"Gartenbewässerung, Einfamilienhaus.",stage:"iletisim",mins:190});
+L({name:"Hofmann Event",firm:"Hofmann Event GmbH",plz:"86150",city:"Augsburg",cat:"EC",src:"web",phone:"+49 821 445 300",mail:"info@hofmann-event.de",msg:"2 Bürocontainer 20 ft für Baustelle, ab März.",stage:"dokuman",mins:1440,opened:true});
+L({name:"Stefan Gruber",firm:"Gruber Landtechnik",plz:"84028",city:"Landshut",cat:"EC",src:"meta",phone:"+49 871 220 19",mail:"s.gruber@gruber-lt.de",msg:"Lagercontainer isoliert?",stage:"teklif",mins:4320});
+L({name:"Katrin Vogel",firm:"",plz:"10115",city:"Berlin",cat:"WE",src:"meta",phone:"+49 152 7781 002",mail:"k.vogel@gmx.de",msg:"Regenwassertank 5.000 L",stage:"yeni",mins:260});
+L({name:"Sportpark Köln",firm:"Sportpark Köln e.V.",plz:"50667",city:"Köln",cat:"EC",src:"web",phone:"+49 221 993 00",mail:"vorstand@sportpark-koeln.de",msg:"Umkleidecontainer mit Sanitär.",stage:"dokuman",mins:4400});
+L({name:"Jan Peters",firm:"Peters GaLaBau",plz:"20095",city:"Hamburg",cat:"WE",src:"meta",phone:"+49 40 789 221",mail:"jan@peters-galabau.de",msg:"Händleranfrage, 20 Anlagen pro Jahr.",stage:"teklif",mins:2900});
+L({name:"Bürgeramt Mainz",firm:"Stadt Mainz",plz:"55116",city:"Mainz",cat:"EC",src:"web",phone:"+49 6131 12 0",mail:"beschaffung@mainz.de",msg:"Ausschreibung Bürocontainer, 6 Einheiten.",stage:"kazanildi",mins:11000});
+L({name:"Lukas Wolf",firm:"",plz:"70173",city:"Stuttgart",cat:"WE",src:"meta",phone:"+49 176 2290 551",mail:"lukas.wolf@t-online.de",msg:"Preis für 3.000 L?",stage:"iletisim",mins:600});
+L({name:"Anna Keller",firm:"Keller Immobilien",plz:"90402",city:"Nürnberg",cat:"WE",src:"web",phone:"+49 911 300 44",mail:"a.keller@keller-immo.de",msg:"Neubau 8 Häuser, Zisternen.",stage:"dokuman",mins:2000});
+L({name:"Markus Brandt",firm:"",plz:"01067",city:"Dresden",cat:"EC",src:"meta",phone:"+49 157 3320 110",mail:"m.brandt@gmail.com",msg:"Gartencontainer gebraucht?",stage:"kaybedildi",mins:9000});
+L({name:"Hotel Seeblick",firm:"Seeblick GmbH",plz:"6020",city:"Innsbruck (AT)",cat:"WE",src:"web",phone:"+43 512 220 33",mail:"info@seeblick.at",msg:"Zisterne für Hotelgarten.",stage:"yeni",mins:150,country:"AT"});
+state.leads.forEach(l=>{l.rep=assign(l);l.log.push([l.mins,(l.src==="meta"?"Meta formu":"Web formu")+" ile geldi, "+repLabel(l.rep)+" atandı"]);if(STAGE_IDX[l.stage]>=2)l.log.unshift([l.mins-30,"Doküman linki gönderildi"]);if(l.opened)l.log.unshift([l.mins-120,"Müşteri linki açtı"]);});
+state.notifs=[
+  {rep:"r8",kind:"new",t:"Yeni lead: Thomas Becker",s:"Meta formu · Wasserernte · München",mins:12,lead:"L100",unread:true},
+  {rep:"r8",kind:"open",t:"Hofmann Event linki açtı",s:"Isolierungsoptionen · 2 kez görüntülendi",mins:300,lead:"L102",unread:true},
+  {rep:"r8",kind:"quote",t:"Stefan Gruber teklif istedi",s:"Ofise görev açıldı",mins:4300,lead:"L103",unread:false}
+];
+
+function assign(l){ if(l.country&&l.country!=="DE") return null; return state.rules[l.plz[0]]||null }
+function rep(id){return state.reps.find(r=>r.id===id)}
+function repLabel(id){return id?rep(id).name:"Benjamin kuyruğu"}
+function ago(m){if(m<60)return m+" dk önce";if(m<1440)return Math.round(m/60)+" sa önce";return Math.round(m/1440)+" gün önce"}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function isLate(l){return l.stage==="yeni"&&l.mins>=120}
+function srcTag(s){return s==="meta"?'<span class="tag t-meta">Meta</span>':'<span class="tag t-web">Web</span>'}
+function stTag(s){return `<span class="st s-${s}">${STAGE_NAME[s]}</span>`}
+function toast(t){const el=document.getElementById("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>el.hidden=true,3600)}
+function addLog(l,t){l.log.unshift([0,t])}
+function notify(repId,kind,t,s,lead){if(!repId)return;state.notifs.unshift({rep:repId,kind,t,s,mins:0,lead,unread:true})}
+const ICON={
+  leads:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 20v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="8" r="3.5"/><path d="M21 20v-1a4 4 0 0 0-3-3.8M16 4.2a3.5 3.5 0 0 1 0 7.6"/></svg>',
+  lib:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 3v5h5M8 13h8M8 17h5"/></svg>',
+  bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 20a2 2 0 0 0 3.4 0"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>'
+};
+
+/* ---------- TEMSİLCİ ---------- */
+function repView(){
+  const me=rep(state.repId);
+  const unread=state.notifs.filter(n=>n.rep===me.id&&n.unread).length;
+  let screen="";
+  if(state.sendFor) screen=sendScreen();
+  else if(state.openLead) screen=leadDetail();
+  else if(state.tab==="leads") screen=leadList();
+  else if(state.tab==="lib") screen=libScreen(false);
+  else screen=notifScreen();
+  return `<div class="rep-layout">
+    <aside class="side">
+      <h3>Kim olarak bakıyorsunuz?</h3>
+      <label for="whoami">Test temsilcisi
+        <select id="whoami">${state.reps.map(r=>`<option value="${r.id}" ${r.id===me.id?"selected":""}>${esc(r.name)} · bölge ${r.zone}</option>`).join("")}</select></label>
+      <p>Bölge ${me.zone}: ${ZONES[me.zone]}. Posta kodu ${me.zone} ile başlayan bütün Wasserernte ve Euro Conteiner leadleri bu kişiye düşer.</p>
+      <p class="ex">10 test temsilcisi ve tüm leadler örnektir.</p>
+    </aside>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen" id="screen">${screen}</div>
+      <nav class="nav">
+        <button data-tab="leads" aria-current="${state.tab==="leads"&&!state.openLead&&!state.sendFor}">${ICON.leads}Leadlerim</button>
+        <button data-tab="lib" aria-current="${state.tab==="lib"&&!state.sendFor}">${ICON.lib}Kütüphane</button>
+        <button data-tab="notif" aria-current="${state.tab==="notif"}">${ICON.bell}Bildirimler${unread?`<span class="badge">${unread}</span>`:""}</button>
+      </nav>
+    </div>
+    <aside class="side right">
+      <h3>Denemek için</h3>
+      <p>1. Bir lead'e dokunun, "Dosya gönder" ile doküman seçip gönderin.</p>
+      <p>2. Lead ekranının altındaki sarı kutudan müşterinin linki açmasını veya teklif istemesini taklit edin. Bildirim düşer, basamak kendiliğinden ilerler.</p>
+      <p>3. Yönetim panelinden "Yeni Meta lead'i" ile gelen talebin hangi temsilciye atandığını görün.</p>
+    </aside>
+  </div>`;
+}
+function leadList(){
+  const mine=state.leads.filter(l=>l.rep===state.repId);
+  const f=state.leadFilter;
+  const list=mine.filter(l=>f==="tumu"||(f==="aktif"?!["kazanildi","kaybedildi"].includes(l.stage):l.stage===f)).sort((a,b)=>a.mins-b.mins);
+  const newCount=mine.filter(l=>l.stage==="yeni").length;
+  return `<div class="scr-head"><h2>Leadlerim</h2><span class="muted" style="font-size:12px">${newCount} yeni</span></div>
+    <div class="filters">${[["aktif","Aktif"],["yeni","Yeni"],["teklif","Teklif"],["tumu","Tümü"]].map(([k,v])=>`<button class="fchip" data-lf="${k}" aria-pressed="${f===k}">${v}</button>`).join("")}</div>
+    ${list.length?list.map(l=>`<button class="lcard" data-lead="${l.id}">
+      <span class="r1"><span><b>${esc(l.name)}</b><br><span class="sub">${esc(l.city)} · ${CAT[l.cat]} · ${ago(l.mins)}</span></span>${srcTag(l.src)}</span>
+      <span class="r2">${stTag(l.stage)}${isLate(l)?'<span class="st late">2 saati geçti</span>':""}${l.opened&&l.stage==="dokuman"?'<span class="st s-dokuman">Link açıldı</span>':""}</span>
+    </button>`).join(""):`<div class="empty">Bu filtrede lead yok. Yeni lead geldiğinde burada ve Bildirimler'de görünür.</div>`}`;
+}
+function leadDetail(){
+  const l=state.leads.find(x=>x.id===state.openLead);
+  const i=STAGE_IDX[l.stage];
+  const closed=["kazanildi","kaybedildi"].includes(l.stage);
+  return `<button class="back" data-back>‹ Leadlerim</button>
+    <div class="scr-head"><h2>${esc(l.name)}</h2>${srcTag(l.src)}</div>
+    <div class="steps">${[0,1,2,3,4].map(k=>`<div class="${k<=i?"on":""}"></div>`).join("")}</div>
+    <div class="steps-l"><span>Yeni</span><span>İletişim</span><span>Doküman</span><span>Teklif</span><span>Sonuç</span></div>
+    <div>${stTag(l.stage)}</div>
+    <div class="quote">"${esc(l.msg)}"</div>
+    <dl class="kv"><dt>Firma</dt><dd>${esc(l.firm||"–")}</dd><dt>Ürün</dt><dd>${CAT[l.cat]}</dd><dt>Yer</dt><dd>${esc(l.plz)} ${esc(l.city)}</dd><dt>Telefon</dt><dd class="mono" style="font-size:12px">${esc(l.phone)}</dd><dt>E-posta</dt><dd>${esc(l.mail)}</dd><dt>Geldi</dt><dd>${ago(l.mins)}, ${l.src==="meta"?"Meta reklam formu":"web sitesi formu"}</dd></dl>
+    <div class="actions">
+      <button class="btn" data-act="call">Aradım</button>
+      <button class="btn" data-act="wa">WhatsApp</button>
+      <button class="btn ghost" data-act="send">Dosya gönder</button>
+    </div>
+    ${!closed&&i>=1?`<div class="actions" style="grid-template-columns:1fr 1fr"><button class="btn ghost" data-act="won">Kazanıldı</button><button class="btn ghost" data-act="lost">Kaybedildi</button></div>`:""}
+    ${i>=2&&!closed?`<div class="demo"><small>Demo · müşteri tarafı</small><div class="row"><button class="btn sm" data-act="sim-open">Müşteri linki açtı</button><button class="btn sm" data-act="sim-quote">Müşteri teklif istedi</button></div></div>`:""}
+    <h3 style="font-size:14px;margin-top:4px">Geçmiş</h3>
+    <div class="timeline">${l.log.map(([m,t])=>`<div><i></i><p>${esc(t)}<br><span>${m?ago(m):"şimdi"}</span></p></div>`).join("")}</div>`;
+}
+function filteredDocs(catLock){
+  const q=state.libQ.toLocaleLowerCase("tr").trim();
+  return state.docs.filter(d=>(catLock?d.cat===catLock:(state.libCat==="tumu"||d.cat===state.libCat))&&(!q||(d.t+" "+d.topic+" "+d.meta).toLocaleLowerCase("tr").split(" ").some(w=>q.split(/\s+/).some(x=>x.length>2&&w.includes(x)))||(!q)));
+}
+function aiAnswer(docs){
+  const q=state.libQ.trim(); if(!q||!docs.length) return "";
+  const d=docs[0];
+  const lines={d8:"20 ft konteynerde 60 mm ve 100 mm PIR panel seçeneği var. Kış kullanımı için 100 mm öneriliyor.",d9:"Konteyner için düz, taşıyıcı bir zemin yeterli: beton plak veya 4 noktada nokta temel.",d11:"Statik belge kar yükü 1,5 kN/m² ve rüzgâr bölgesi 2'ye kadar geçerli.",d2:"Duvar paneli montajı 2 kişiyle yaklaşık 3 saat sürüyor. Adımlar PDF'te resimli anlatılıyor.",d3:"60 saniyelik kısa video müşteriye ilk gönderim için uygun.",d4:"Tank hacimleri 3.000 ile 10.000 litre arasında, ölçüler veri sayfasında."};
+  return `<div class="ai">${lines[d.id]||"En uygun doküman: "+esc(d.t)+"."}<small>kaynak: ${esc(d.t)} · AI cevabı Faz 2'de canlıya alınır</small></div>`;
+}
+function libScreen(sending){
+  const l=sending?state.leads.find(x=>x.id===state.sendFor):null;
+  const docs=filteredDocs(sending?l.cat:null);
+  return `${sending?`<button class="back" data-cancel-send>‹ ${esc(l.name)}</button><div class="scr-head"><h2>Dosya seç</h2></div>`:`<div class="scr-head"><h2>Kütüphane</h2></div>`}
+    <div class="search"><input id="libq" placeholder="Ne arıyorsunuz? ör. izolasyon" value="${esc(state.libQ)}" aria-label="Kütüphanede ara"><button class="mic" aria-label="Sesle ara" data-mic>${ICON.mic}</button></div>
+    ${sending?"":`<div class="filters">${[["tumu","Tümü"],["WE","Wasserernte"],["EC","Euro Conteiner"]].map(([k,v])=>`<button class="fchip" data-lc="${k}" aria-pressed="${state.libCat===k}">${v}</button>`).join("")}</div>`}
+    ${aiAnswer(docs)}
+    ${docs.length?docs.map(d=>`<button class="doc ${d.share?"":"internal"}" ${sending&&d.share?`data-pick="${d.id}"`:""} aria-pressed="${state.selected.includes(d.id)}" ${sending&&!d.share?"disabled":""}>
+      <span class="ty">${d.ty}</span><span class="mm"><b>${esc(d.t)}</b><span>${CAT[d.cat]} · ${esc(d.meta)}${d.share?"":" · paylaşılamaz"}</span></span>${sending&&d.share?'<span class="ck">✓</span>':""}</button>`).join(""):`<div class="empty">"${esc(state.libQ)}" için doküman yok. Bu arama haftalık eksik doküman raporuna eklendi.</div>`}
+    ${sending?`<div class="sendbar"><button class="btn" data-next ${state.selected.length?"":"disabled"}>${state.selected.length} dosya ile devam et</button></div>`:""}`;
+}
+function sendScreen(){
+  const l=state.leads.find(x=>x.id===state.sendFor);
+  if(state.step!=="msg") return libScreen(true);
+  const docs=state.docs.filter(d=>state.selected.includes(d.id));
+  return `<button class="back" data-step-back>‹ Dosya seç</button>
+    <div class="scr-head"><h2>Gönder</h2></div>
+    <dl class="kv"><dt>Kime</dt><dd>${esc(l.name)}</dd><dt>Dosyalar</dt><dd>${docs.map(d=>esc(d.t)).join(", ")}</dd></dl>
+    <div class="chips">${[["wa","WhatsApp"],["mail","E-posta"]].map(([k,v])=>`<button class="chip" data-ch="${k}" aria-pressed="${state.channel===k}">${v}</button>`).join("")}</div>
+    <label for="msg" class="muted" style="font-size:12px">Mesaj (müşterinin dilinde hazır)</label>
+    <textarea id="msg">${esc(state.msg)}</textarea>
+    <div class="sendbar"><button class="btn" data-send>${state.channel==="wa"?"WhatsApp'ta gönder":"E-postayı gönder"}</button>
+    <span class="ex">Prototipte gerçek mesaj gönderilmez.</span></div>`;
+}
+function draftMsg(l){
+  const me=rep(state.repId);
+  const first=l.firm&&l.firm!==l.name?"Guten Tag":"Guten Tag "+l.name.split(" ")[0];
+  return `${first},\n\nvielen Dank für Ihre Anfrage zu ${CAT[l.cat]}. Hier finden Sie die passenden Unterlagen:\nhub.moonzelt.com/s/${Math.random().toString(36).slice(2,7)}\n\nBei Fragen erreichen Sie mich direkt unter ${me.phone}.\n\nViele Grüße\n${me.name}`;
+}
+function notifScreen(){
+  const list=state.notifs.filter(n=>n.rep===state.repId);
+  const col={new:"var(--meta)",open:"var(--teal)",quote:"var(--ok)",late:"var(--warn)"};
+  setTimeout(()=>list.forEach(n=>n.unread=false),1500);
+  return `<div class="scr-head"><h2>Bildirimler</h2></div>
+    ${list.length?list.map(n=>`<button class="notif ${n.unread?"unread":""}" data-lead="${n.lead}"><span class="dot" style="background:${col[n.kind]}"></span><span><b>${esc(n.t)}</b><span>${esc(n.s)} · ${n.mins?ago(n.mins):"şimdi"}</span></span></button>`).join(""):`<div class="empty">Henüz bildirim yok.</div>`}`;
+}
+
+/* ---------- YÖNETİM ---------- */
+function adminView(){
+  const t=state.adminTab;
+  const tabs=[["genel","Genel bakış"],["leadler","Leadler"],["atama","Atama kuralları"],["kutuphane","Kütüphane"]];
+  let body=t==="genel"?adminHome():t==="leadler"?adminLeads():t==="atama"?adminRules():adminLib();
+  return `<nav class="admin-tabs">${tabs.map(([k,v])=>`<button data-at="${k}" aria-current="${t===k}">${v}</button>`).join("")}</nav>
+    <div class="toolbar"><div class="l"><h2 style="font-size:22px">${tabs.find(x=>x[0]===t)[1]}</h2></div>
+    <div class="sim"><small>Demo</small><button class="btn sm" data-sim="meta">Yeni Meta lead'i</button><button class="btn sm" data-sim="web">Yeni web formu</button></div></div>${body}`;
+}
+function adminHome(){
+  const ls=state.leads;
+  const week=ls.filter(l=>l.mins<10080);
+  const cnt=k=>ls.filter(l=>l.stage===k).length;
+  const late=ls.filter(isLate);
+  const unassigned=ls.filter(l=>!l.rep&&!["kazanildi","kaybedildi"].includes(l.stage));
+  const bySrc={meta:week.filter(l=>l.src==="meta").length,web:week.filter(l=>l.src==="web").length};
+  const max=Math.max(1,bySrc.meta,bySrc.web);
+  const byCat={WE:week.filter(l=>l.cat==="WE").length,EC:week.filter(l=>l.cat==="EC").length};
+  const maxc=Math.max(1,byCat.WE,byCat.EC);
+  return `<div class="kpis">
+      <div class="kpi"><span>Yeni lead · 7 gün</span><b>${week.length}</b><small>Meta ${bySrc.meta} · Web ${bySrc.web}</small></div>
+      <div class="kpi"><span>Bekleyen (yeni)</span><b>${cnt("yeni")}</b><small>${late.length} tanesi 2 saati geçti</small></div>
+      <div class="kpi"><span>Teklif aşamasında</span><b>${cnt("teklif")}</b><small>ofis hazırlıyor</small></div>
+      <div class="kpi"><span>Kazanılan</span><b>${cnt("kazanildi")}</b><small>${cnt("kaybedildi")} kaybedildi</small></div>
+    </div>
+    ${late.length||unassigned.length?`<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      ${late.map(l=>`<div class="alert"><span><b>${esc(l.name)}</b> · ${esc(l.city)} · ${ago(l.mins)} geldi, ${esc(repLabel(l.rep))} henüz dönmedi</span><button class="btn sm" data-goleads>Leadlere git</button></div>`).join("")}
+      ${unassigned.map(l=>`<div class="alert" style="border-color:var(--warn);background:var(--warn-soft)"><span><b>${esc(l.name)}</b> · ${esc(l.city)} · Almanya dışı, bölge kuralı yok</span><button class="btn sm" data-goleads>Elle ata</button></div>`).join("")}
+    </div>`:""}
+    <div class="g2">
+      <div class="card"><h3>Lead kaynakları <span>son 7 gün</span></h3>
+        <div class="hb"><span>Meta reklam formu</span><span class="tr"><i class="meta" style="width:${bySrc.meta/max*100}%"></i></span><span class="v">${bySrc.meta}</span></div>
+        <div class="hb"><span>Web sitesi formu</span><span class="tr"><i style="width:${bySrc.web/max*100}%"></i></span><span class="v">${bySrc.web}</span></div>
+        <h3 style="margin-top:6px">Ürüne göre <span>son 7 gün</span></h3>
+        <div class="hb"><span>Wasserernte</span><span class="tr"><i style="width:${byCat.WE/maxc*100}%"></i></span><span class="v">${byCat.WE}</span></div>
+        <div class="hb"><span>Euro Conteiner</span><span class="tr"><i style="width:${byCat.EC/maxc*100}%"></i></span><span class="v">${byCat.EC}</span></div>
+      </div>
+      <div class="card"><h3>Leadler hangi basamakta? <span>tümü</span></h3>
+        <div class="pipe">${STAGES.map(([k,v])=>`<div><b>${cnt(k)}</b>${v}</div>`).join("")}</div>
+        <p class="note">Basamaklar kendiliğinden ilerler: dosya gönderilince "Doküman gitti", müşteri teklif isteyince "Teklif".</p>
+      </div>
+    </div>
+    <div class="tbl"><table><thead><tr><th>Temsilci</th><th>Bölge</th><th class="num">Lead</th><th class="num">Bekleyen</th><th class="num">Teklif</th><th class="num">Kazanılan</th></tr></thead><tbody>
+      ${state.reps.map(r=>{const m=ls.filter(l=>l.rep===r.id);return `<tr><td>${esc(r.name)}${r.partner?' <span class="tag t-we">partner</span>':""}</td><td>${r.zone} · ${ZONES[r.zone]}</td><td class="num">${m.length}</td><td class="num">${m.filter(l=>l.stage==="yeni").length}</td><td class="num">${m.filter(l=>l.stage==="teklif").length}</td><td class="num">${m.filter(l=>l.stage==="kazanildi").length}</td></tr>`}).join("")}
+    </tbody></table></div>`;
+}
+function adminLeads(){
+  const f=state.tableFilter;
+  const list=state.leads.filter(l=>f==="tumu"||(f==="bekleyen"?l.stage==="yeni":f==="atanmamis"?!l.rep:l.stage===f)).sort((a,b)=>a.mins-b.mins);
+  return `<div class="filters" style="margin-bottom:12px">${[["tumu","Tümü"],["bekleyen","Bekleyen"],["atanmamis","Atanmamış"],["teklif","Teklif"],["kazanildi","Kazanıldı"]].map(([k,v])=>`<button class="fchip" data-tf="${k}" aria-pressed="${f===k}">${v}</button>`).join("")}</div>
+  <div class="tbl"><table><thead><tr><th>Geldi</th><th>Kişi</th><th>Ürün</th><th>Yer</th><th>Kaynak</th><th>Basamak</th><th>Temsilci</th></tr></thead><tbody>
+  ${list.map(l=>`<tr><td>${ago(l.mins)}</td><td><b>${esc(l.name)}</b>${l.firm&&l.firm!==l.name?`<br><span class="muted" style="font-size:12px">${esc(l.firm)}</span>`:""}</td><td>${CAT[l.cat]}</td><td>${esc(l.plz)} ${esc(l.city)}</td><td>${srcTag(l.src)}</td><td>${stTag(l.stage)}${isLate(l)?' <span class="st late">2 sa+</span>':""}</td>
+  <td><select data-reassign="${l.id}" aria-label="Temsilci">${l.rep?"":'<option value="">Atanmadı</option>'}${state.reps.map(r=>`<option value="${r.id}" ${r.id===l.rep?"selected":""}>${esc(r.name)}</option>`).join("")}</select></td></tr>`).join("")||`<tr><td colspan="7" class="muted">Bu filtrede lead yok.</td></tr>`}
+  </tbody></table></div>`;
+}
+function adminRules(){
+  return `<p class="note" style="margin-bottom:14px">Şimdilik tek kural var: <b>bölge</b>. Almanya posta kodunun ilk hanesi bölgeyi belirler, her bölgenin bir temsilcisi olur. Almanya dışından gelen leadler Benjamin'in kuyruğuna düşer ve elle atanır. Temsilci 2 saat içinde dönmezse Genel bakış'ta uyarı çıkar.</p>
+  <div class="rules">${Object.keys(ZONES).map(z=>`<div class="rule"><div class="z"><b>${z}</b><span>${z}xxxx · ${ZONES[z]}</span></div>
+    <select data-rule="${z}" aria-label="Bölge ${z} temsilcisi">${state.reps.map(r=>`<option value="${r.id}" ${state.rules[z]===r.id?"selected":""}>${esc(r.name)}</option>`).join("")}</select></div>`).join("")}
+    <div class="rule"><div class="z"><b style="color:var(--sand)">AT·CH·NL</b></div><span class="muted" style="font-size:12.5px">Almanya dışı → Benjamin kuyruğu, elle atanır</span></div>
+  </div>`;
+}
+function adminLib(){
+  const col=c=>state.docs.filter(d=>d.cat===c).map(d=>`<div class="doc" style="cursor:default"><span class="ty">${d.ty}</span><span class="mm"><b>${esc(d.t)}</b><span>${esc(d.meta)}</span></span>${d.share?'<span class="st s-dokuman">Paylaşılabilir</span>':'<span class="st s-teklif">Sadece iç</span>'}</div>`).join("");
+  return `<p class="note" style="margin-bottom:14px">Editörler dosyayı sürükleyip bırakır, sistem kategori, konu ve dil etiketlerini önerir. Yeni versiyon yüklenince müşteriye gitmiş eski linkler de yeni dosyayı açar. "Sadece iç" dosyalar temsilcide görünür ama gönderilemez.</p>
+  <div class="libgrid"><div class="card"><h3>Wasserernte <span>${state.docs.filter(d=>d.cat==="WE").length} doküman</span></h3>${col("WE")}</div>
+  <div class="card"><h3>Euro Conteiner <span>${state.docs.filter(d=>d.cat==="EC").length} doküman</span></h3>${col("EC")}</div></div>`;
+}
+
+/* ---------- olaylar ---------- */
+const NAMES=[["Michael Krause","Krause Haustechnik"],["Julia Neumann",""],["Tobias Schröder","Schröder Bau"],["Sabine Hartmann",""],["Daniel Koch","Koch Events"],["Claudia Richter","Gemeinde Lindau"]];
+const PLZS=[["80469","München"],["10437","Berlin"],["50823","Köln"],["70565","Stuttgart"],["20249","Hamburg"],["90489","Nürnberg"],["60311","Frankfurt"],["04109","Leipzig"],["30159","Hannover"],["40213","Düsseldorf"]];
+function simLead(src){
+  const n=NAMES[Math.floor(Math.random()*NAMES.length)], p=PLZS[Math.floor(Math.random()*PLZS.length)], cat=Math.random()<.5?"WE":"EC";
+  const l={id:"L"+(state.seq++),name:n[0],firm:n[1],plz:p[0],city:p[1],cat,src,phone:"+49 17"+Math.floor(1e7+Math.random()*9e7),mail:n[0].toLowerCase().replace(" ",".").replace(/ö/g,"oe")+"@example.de",msg:cat==="WE"?"Bitte Infos zu Regenwasserzisternen senden.":"Brauche Angebot für Container 20 ft.",stage:"yeni",mins:0,log:[]};
+  l.rep=assign(l);
+  l.log.push([0,(src==="meta"?"Meta formu":"Web formu")+" ile geldi, "+repLabel(l.rep)+" atandı"]);
+  state.leads.push(l);
+  notify(l.rep,"new","Yeni lead: "+l.name,(src==="meta"?"Meta formu":"Web formu")+" · "+CAT[cat]+" · "+l.city,l.id);
+  toast(`${src==="meta"?"Meta":"Web"} lead'i geldi: posta kodu ${l.plz} → bölge ${l.plz[0]} → ${repLabel(l.rep)}`);
+}
+const app=document.getElementById("app");
+function render(){
+  document.getElementById("v-rep").setAttribute("aria-pressed",state.view==="rep");
+  document.getElementById("v-admin").setAttribute("aria-pressed",state.view==="admin");
+  const sc=document.getElementById("screen"); const keep=sc?sc.scrollTop:0;
+  app.innerHTML=state.view==="rep"?repView():adminView();
+  const s2=document.getElementById("screen"); if(s2&&render.keepScroll)s2.scrollTop=keep; render.keepScroll=false;
+}
+document.getElementById("v-rep").onclick=()=>{state.view="rep";render()};
+document.getElementById("v-admin").onclick=()=>{state.view="admin";render()};
+app.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.id==="whoami"){state.repId=t.value;state.openLead=null;state.sendFor=null;render()}
+  if(t.dataset.rule!==undefined){state.rules[t.dataset.rule]=t.value;toast(`Bölge ${t.dataset.rule} artık ${rep(t.value).name}. Yeni gelen leadler bu kurala göre atanır.`);render()}
+  if(t.dataset.reassign){const l=state.leads.find(x=>x.id===t.dataset.reassign);l.rep=t.value||null;addLog(l,"Yönetim tarafından "+repLabel(l.rep)+" atandı");notify(l.rep,"new","Size lead atandı: "+l.name,CAT[l.cat]+" · "+l.city,l.id);toast(l.name+" → "+repLabel(l.rep));render()}
+});
+app.addEventListener("input",e=>{
+  if(e.target.id==="libq"){state.libQ=e.target.value;const pos=e.target.selectionStart;render();const i=document.getElementById("libq");if(i){i.focus();i.setSelectionRange(pos,pos)}}
+  if(e.target.id==="msg"){state.msg=e.target.value}
+});
+app.addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b)return; const d=b.dataset;
+  if(d.tab){state.tab=d.tab;state.openLead=null;state.sendFor=null;state.libQ="";render();return}
+  if(d.lf){state.leadFilter=d.lf;render();return}
+  if(d.lc){state.libCat=d.lc;render();return}
+  if(d.lead){state.openLead=d.lead;state.tab="leads";render();return}
+  if(d.back!==undefined){state.openLead=null;render();return}
+  if(d.mic!==undefined){state.libQ=state.sendFor?(state.leads.find(x=>x.id===state.sendFor).cat==="EC"?"izolasyon":"montaj"):"Conteiner izolasyon";toast("Sesli arama: \""+state.libQ+"\" (prototipte örnek cümle)");render();return}
+  if(d.at){state.adminTab=d.at;render();return}
+  if(d.tf){state.tableFilter=d.tf;render();return}
+  if(d.goleads!==undefined){state.adminTab="leadler";state.tableFilter="tumu";render();return}
+  if(d.sim){simLead(d.sim);render();return}
+  const l=state.openLead&&state.leads.find(x=>x.id===state.openLead);
+  if(d.act&&l){
+    if(d.act==="call"){if(l.stage==="yeni")l.stage="iletisim";addLog(l,"Arandı");toast("Arama kaydedildi, lead 'İletişimde' basamağında");render.keepScroll=true}
+    if(d.act==="wa"){if(l.stage==="yeni")l.stage="iletisim";addLog(l,"WhatsApp'tan yazıldı");toast("Gerçek uygulamada telefonun WhatsApp'ı "+l.phone+" ile açılır")}
+    if(d.act==="send"){state.sendFor=l.id;state.step="pick";state.selected=[];state.libQ=""}
+    if(d.act==="won"){l.stage="kazanildi";addLog(l,"Kazanıldı olarak işaretlendi");toast("Tebrikler, lead kazanıldı")}
+    if(d.act==="lost"){l.stage="kaybedildi";addLog(l,"Kaybedildi olarak işaretlendi");toast("Lead kapatıldı")}
+    if(d.act==="sim-open"){l.opened=true;addLog(l,"Müşteri linki açtı");notify(l.rep,"open",l.name+" linki açtı","Aramak için iyi zaman",l.id);toast("Bildirim düştü: "+l.name+" linki açtı");render.keepScroll=true}
+    if(d.act==="sim-quote"){l.stage="teklif";addLog(l,"Müşteri 'Teklif iste'ye bastı, ofise görev açıldı");notify(l.rep,"quote",l.name+" teklif istedi","Ofise görev açıldı",l.id);toast("Lead 'Teklif' basamağına geçti, ofise görev açıldı");render.keepScroll=true}
+    render();return;
+  }
+  if(d.cancelSend!==undefined){state.sendFor=null;render();return}
+  if(d.pick){const i=state.selected.indexOf(d.pick);i<0?state.selected.push(d.pick):state.selected.splice(i,1);render.keepScroll=true;render();return}
+  if(d.next!==undefined){const ll=state.leads.find(x=>x.id===state.sendFor);state.step="msg";state.msg=draftMsg(ll);render();return}
+  if(d.stepBack!==undefined){state.step="pick";render();return}
+  if(d.ch){state.channel=d.ch;render();return}
+  if(d.send!==undefined){const ll=state.leads.find(x=>x.id===state.sendFor);const names=state.docs.filter(x=>state.selected.includes(x.id)).map(x=>x.t).join(", ");
+    if(STAGE_IDX[ll.stage]<2)ll.stage="dokuman";addLog(ll,(state.channel==="wa"?"WhatsApp":"E-posta")+" ile gönderildi: "+names);
+    state.sendFor=null;state.selected=[];state.libQ="";toast("Gönderildi. Lead 'Doküman gitti' basamağına geçti, link takibi başladı");render();return}
+});
+render();
+</script>
+</body></html>
